@@ -1,0 +1,4 @@
+DJANGO_SECRET_KEY = 'django-insecure-sww8h_*rk*5eqo1d0si7$hkzh-=9y@1c95e3vxm2bdwpu!y_8m'
+POSTGRES_NAME = 'feedback_service'
+POSTGRES_USER = 'postgres'
+POSTGRES_PASSWORD = '1234'
