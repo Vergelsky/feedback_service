@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'tg_questions',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [

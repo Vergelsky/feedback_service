@@ -21,9 +21,9 @@ class Survey(models.Model):
 
 
 class Question(models.Model):
-    survey = models.ForeignKey(Survey, related_name='questions', on_delete=models.CASCADE)
-    text = models.CharField(max_length=255)
-    order = models.PositiveIntegerField()
+    survey = models.ForeignKey(Survey, related_name='questions', on_delete=models.CASCADE, verbose_name='Вопрос')
+    text = models.CharField(max_length=255, verbose_name='Текст')
+    order = models.PositiveIntegerField(verbose_name='Номер')
 
     class Meta:
         verbose_name = "Вопрос"
@@ -34,8 +34,9 @@ class Question(models.Model):
 
 
 class Choice(models.Model):
-    question = models.ForeignKey(Question, related_name='choices', on_delete=models.CASCADE)
-    text = models.CharField(max_length=255)
+    question = models.ForeignKey(Question, related_name='choices', on_delete=models.CASCADE, verbose_name='Вариант ответа')
+    text = models.CharField(max_length=255, verbose_name='Текст')
+    order = models.PositiveIntegerField(default=1, verbose_name='Номер')
 
     class Meta:
         verbose_name = "Вариант ответа"
@@ -46,22 +47,22 @@ class Choice(models.Model):
 
 
 class Response(models.Model):
-    client = models.CharField(max_length=255, default="Anonymous")
-    survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
-    completed_at = models.DateTimeField(auto_now_add=True)
+    client = models.CharField(max_length=255, default="Anonymous", verbose_name='Клиент')
+    survey = models.ForeignKey(Survey, on_delete=models.CASCADE, verbose_name='Опрос')
+    completed_at = models.DateTimeField(auto_now_add=True, verbose_name='Время окончания')
 
     class Meta:
-        verbose_name = "Ответ"
-        verbose_name_plural = "Ответы"
+        verbose_name = "Пройденный опрос"
+        verbose_name_plural = "Пройденные опросы"
 
     def __str__(self):
-        return f"Response by {self.user} for {self.survey}"
+        return f"Response by {self.client} for {self.survey}"
 
 
 class UserResponse(models.Model):
-    response = models.ForeignKey(Response, related_name='user_responses', on_delete=models.CASCADE)
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    choice = models.ForeignKey(Choice, on_delete=models.CASCADE)
+    response = models.ForeignKey(Response, related_name='responses', on_delete=models.CASCADE, verbose_name='Пройденный опрос')
+    question = models.ForeignKey(Question, related_name='responses', on_delete=models.CASCADE, verbose_name='Вопрос')
+    choice = models.ForeignKey(Choice,  related_name='responses', on_delete=models.CASCADE, verbose_name='Выбранный ответ')
 
     class Meta:
         verbose_name = "Ответ пользователя"
