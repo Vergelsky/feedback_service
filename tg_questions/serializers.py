@@ -38,6 +38,7 @@ class ResponseSerializer(serializers.ModelSerializer):
         fields = ['id', 'survey', 'client', 'completed_at', 'responses']
 
     def create(self, validated_data):
+        print(validated_data)
         user_responses_data = validated_data.pop('responses')
         response = Response.objects.create(**validated_data)
         for user_response_data in user_responses_data:

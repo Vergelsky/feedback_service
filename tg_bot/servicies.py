@@ -1,3 +1,5 @@
+import json
+
 import aiohttp
 import random
 from aiogram.types import Message
@@ -22,6 +24,7 @@ async def send_answers(answers):
     url = "http://127.0.0.1:8000/api/load-response/"
     try:
         async with aiohttp.ClientSession() as session:
+            print(answers)
             async with session.post(url, json=answers) as response:
                 return response.status == 200
     except aiohttp.ClientError as e:
@@ -31,34 +34,9 @@ async def send_answers(answers):
 
 def get_irrelevant_message_text(message: Message):
 
-
-#
-# async def ask_question(message: types.Message, state: FSMContext):
-#     data = await state.get_data()
-#     survey_data = data.get('survey_data')
-#     current_question_index = data.get('current_question_index')
-#
-#     if current_question_index >= len(survey_data['questions']):
-#         await finish_survey(message, state)
-#         return
-#
-#     question = survey_data['questions'][current_question_index]
-#
-#     await message.answer(question['text'], reply_markup=get_answers_kb(question['choices']))
-#
-#     # Устанавливаем состояние ожидания ответа
-#     await FSMSurveyState.current_question.set()
-#
-#
-# async def finish_survey(message: types.Message, state: FSMContext):
-#     await state.clear()
-#     await message.answer("Опрос завершен!\n"
-#                          "Спасибо за участие!")
-
     IRRELEVANT_MESSAGE_TEXTS = [
         f"Мне жаль, {html.bold(message.from_user.full_name)},но я могу только предложить пройти опрос."
         f"Хотел бы помочь, но моя судьба — это опросы.",
-        f"О, как мне грустно! Но я создан только для опросов. Может, пройдёте один?",
         f"Я так хотел бы помочь, но, увы, опрос — всё, что я могу предложить. {html.bold(message.from_user.full_name)},"
         f"пожалуйста, уделите минуту!",
         f"Ах, если бы я мог сделать больше, но мне доступен лишь опрос. Пройдите его, прошу!",
