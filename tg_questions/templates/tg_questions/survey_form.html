@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Форма опроса</title>
+</head>
+<body>
+<form method="post">
+    <h2>Создание опроса</h2>
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Создать">
+
+    {{ question_form.management_form }}
+    {% for q_form in question_form.forms %}
+
+        <h4>Создание вопроса</h4>
+        {{ q_form.as_ul }}
+        {{ q_form.choice_form.management_form }}
+        {% for c_form in q_form.choice_form %}
+            <h6>Создание варианта ответа</h6>
+            {{ c_form.as_ul }}
+        {% endfor %}
+
+    {% endfor %}
+</form>
+</body>
+</html>

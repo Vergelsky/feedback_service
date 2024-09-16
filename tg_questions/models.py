@@ -21,7 +21,7 @@ class Survey(models.Model):
 
 
 class Question(models.Model):
-    survey = models.ForeignKey(Survey, related_name='questions', on_delete=models.CASCADE, verbose_name='Вопрос')
+    survey = models.ForeignKey(Survey, related_name='questions', on_delete=models.CASCADE, verbose_name='К опросу')
     text = models.CharField(max_length=255, verbose_name='Текст')
     order = models.PositiveIntegerField(verbose_name='Номер')
 

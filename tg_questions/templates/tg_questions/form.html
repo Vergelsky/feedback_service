@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>Создать опрос</title>
+    <style>
+        .form-group {
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+<h1>Создать опрос</h1>
+<form id="survey-form">
+    <div class="form-group">
+        <label for="title">Название опроса:</label>
+        <input type="text" id="title" name="title" required>
+        <label>
+            Активен:
+            <input type="checkbox" name="is_active">
+        </label>
+        <label>
+            Постоянный:
+            <input type="checkbox" name="is_permanent" id="is_permanent">
+        </label>
+        <label id="expiration-date-label">
+            Срок действия:
+            <input type="datetime-local" name="expiration_date" id="expiration_date">
+        </label>
+    </div>
+    <div class="form-group">
+        <label for="description">Описание опроса:</label>
+        <textarea id="description" name="description" required></textarea>
+    </div>
+    <div id="questions-container"></div>
+    <button type="button" onclick="addQuestion()">Добавить вопрос</button>
+    <button type="submit">Сохранить опрос</button>
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const isPermanentCheckbox = document.getElementById('is_permanent');
+    const expirationDateLabel = document.getElementById('expiration-date-label');
+
+    // Функция для скрытия/отображения поля "Срок действия"
+    function toggleExpirationDate() {
+        if (isPermanentCheckbox.checked) {
+            expirationDateLabel.style.display = 'none'; // Скрываем поле
+        } else {
+            expirationDateLabel.style.display = 'block'; // Отображаем поле
+        }
+    }
+
+    // Применить функцию при загрузке страницы
+    toggleExpirationDate();
+
+    // Применить функцию при изменении состояния чекбокса
+    isPermanentCheckbox.addEventListener('change', toggleExpirationDate);
+});
+
+    function getCsrfToken() {
+    return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    }
+
+    let questionCount = 0;
+
+    function addQuestion() {
+        questionCount++;
+        const container = document.getElementById('questions-container');
+
+        const questionDiv = document.createElement('div');
+        questionDiv.className = 'form-group';
+        questionDiv.id = `question-${questionCount}`;
+
+        questionDiv.innerHTML = `
+            <h3>Вопрос ${questionCount}</h3>
+            <label for="question-text-${questionCount}">Текст вопроса:</label>
+            <input type="text" id="question-text-${questionCount}" name="questions[${questionCount}][text]" required>
+            <div id="choices-${questionCount}"></div>
+            <button type="button" onclick="addChoice(${questionCount})">Добавить вариант ответа</button>
+        `;
+
+        container.appendChild(questionDiv);
+    }
+
+    function addChoice(questionId) {
+        const choiceCount = document.querySelectorAll(`#choices-${questionId} .choice`).length + 1;
+        const choicesContainer = document.getElementById(`choices-${questionId}`);
+
+        const choiceDiv = document.createElement('div');
+        choiceDiv.className = 'choice';
+        choiceDiv.innerHTML = `
+            <label for="choice-text-${questionId}-${choiceCount}">Вариант ответа ${choiceCount}:</label>
+            <input type="text" id="choice-text-${questionId}-${choiceCount}" name="questions[${questionId}][choices][${choiceCount}][text]" required>
+        `;
+
+        choicesContainer.appendChild(choiceDiv);
+    }
+
+    document.getElementById('survey-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+
+        const isPermanentCheckbox = document.getElementById('is_permanent');
+
+        const formData = new FormData(this);
+        const surveyData = {
+            id: 1, // Здесь можно заменить на реальный ID, если нужно
+            title: formData.get('title'),
+            description: formData.get('description'),
+            is_active: formData.get('is_active') === 'on',
+            is_permanent: formData.get('is_permanent') === 'on',
+            expiration_date: isPermanentCheckbox.checked ? null : formData.get('expiration_date'),
+            questions: []
+        };
+
+        for (let [key, value] of formData.entries()) {
+            const parts = key.split('[');
+            if (parts[0] === 'questions') {
+                const questionId = parts[1].replace(']', '');
+                if (!surveyData.questions[questionId - 1]) {
+                    surveyData.questions[questionId - 1] = {
+                        id: questionId,
+                        survey: 1, // Здесь можно заменить на реальный ID, если нужно
+                        text: formData.get(`questions[${questionId}][text]`),
+                        order: questionId,
+                        choices: []
+                    };
+                }
+                if (parts[2] === 'choices') {
+                    const choiceId = parts[3].replace(']', '');
+                    surveyData.questions[questionId - 1].choices.push({
+                        id: choiceId,
+                        text: value,
+                        order: choiceId,
+                        question: questionId
+                    });
+                }
+            }
+        }
+
+        fetch('/api/create-survey/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken(),
+            },
+            body: JSON.stringify(surveyData),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+            // Обработка успешного ответа
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            // Обработка ошибки
+        });
+    });
+
+</script>
+</body>
+</html>

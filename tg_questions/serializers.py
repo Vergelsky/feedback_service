@@ -5,23 +5,39 @@ from .models import Survey, Response, Question, Choice, UserResponse
 class ChoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Choice
-        fields = '__all__'
+        fields = ['text']
 
 
 class QuestionSerializer(serializers.ModelSerializer):
-    choices = ChoiceSerializer(many=True, read_only=True)
+    choices = ChoiceSerializer(many=True)
 
     class Meta:
         model = Question
-        fields = ['id', 'survey', 'text', 'order', 'choices']
+        fields = ['text', 'order', 'choices']
+
+    def create(self, validated_data):
+        choices = validated_data.pop('choices', [])
+        question = Question.objects.create(**validated_data)
+        for choice in choices:
+            choice['question'] = question
+            ChoiceSerializer.create(**choice)
+        return question
 
 
 class SurveySerializer(serializers.ModelSerializer):
-    questions = QuestionSerializer(many=True, read_only=True)
+    questions = QuestionSerializer(many=True)
 
     class Meta:
         model = Survey
-        fields = ['id', 'title', 'description', 'questions']
+        fields = ['title', 'description', 'is_active', 'is_permanent', 'expiration_date', 'questions']
+
+    def create(self, validated_date):
+        questions = validated_date.pop('questions', [])
+        survey = Survey.objects.create(**validated_date)
+        for question in questions:
+            question['survey'] = survey
+            QuestionSerializer.create(**question)
+        return survey
 
 
 class UserResponseSerializer(serializers.ModelSerializer):
