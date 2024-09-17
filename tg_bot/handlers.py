@@ -24,6 +24,13 @@ async def command_start_handler(message: Message) -> None:
                          reply_markup=get_start_survey_kb())
 
 
+# Обработка команды старт во время ответа на вопрос
+@router.message(CommandStart(), StateFilter(FSMSurveyState.answers))
+async def command_start_in_progress_handler(message: Message, state: FSMContext) -> None:
+    await message.answer(f"Мы уже начали, завершите опрос, пожалуйста!")
+    await ask_question(message, state)
+
+
 # Обработка нажатия кнопки "Начать опрос"
 @router.message(F.text == BUTTONS_TEXTS['start_survey'], StateFilter(default_state))
 async def start_survey_handler(message: Message, state: FSMContext):
@@ -39,10 +46,23 @@ async def start_survey_handler(message: Message, state: FSMContext):
                              reply_markup=get_start_survey_kb())
 
 
+# Обработка нажатия кнопки "Начать опрос" во время опроса
+@router.message(F.text == BUTTONS_TEXTS['start_survey'], StateFilter(FSMSurveyState.answers))
+async def start_survey_in_progress_handler(message: Message, state: FSMContext):
+        await message.answer("Опрос уже запущен, пожалуйста, завершите его!")
+        await ask_question(message, state)
+
+
 # Обработка нажатия кнопки ответа на вопрос
 @router.callback_query(StateFilter(FSMSurveyState.answers))
 async def answers_handler(call: CallbackQuery, state: FSMContext):
     await save_answer_and_next_question(call, state)
+
+
+@router.message(StateFilter(FSMSurveyState.answers))
+async def irrelevant_message_handler(message: Message, state: FSMContext) -> None:
+    await message.answer("Пожалуйста, завершите прохождение опроса!")
+    await ask_question(message, state)
 
 
 @router.message()
@@ -60,7 +80,17 @@ async def ask_question(message: types.Message, state: FSMContext):
         return
 
     question = survey_data['questions'][current_question_index]
-    await message.answer(question['text'], reply_markup=get_answers_kb(question['choices']))
+    question_full_text = f'{question['text']}:\n'
+    for i in range(len(question['choices'])):
+        question_full_text += f'{i + 1}. {question["choices"][i]["text"]}\n'
+
+    # Коллбек для каждого варианта начинаем с номера вопроса (q_0_1, q_0_2, ...)
+    for choice in question['choices']:
+        choice['callback_choice'] = f'q_{question["id"]}_{str(choice["id"])}'
+
+    print(question['choices'])
+
+    await message.answer(question_full_text, reply_markup=get_answers_kb(question['choices']))
 
     await state.set_state(FSMSurveyState.answers)
 
@@ -71,12 +101,25 @@ async def save_answer_and_next_question(call: types.CallbackQuery, state: FSMCon
     current_question_index = data.get('current_question_index')
     current_question_id = survey_data['questions'][current_question_index]['id']
 
-    result = {'question': current_question_id, "choice": int(call.data)}
+    print('survey_data', survey_data, 'current_question_index', current_question_index, 'current_question_id', current_question_id)
+
+    # Извлекаем номер вопроса и выбранный вариант из callack_data ('q_0_1')
+    call_data_splitted = call.data.split('_')
+    question_data, choice_data = call_data_splitted[1], call_data_splitted[-1]
+
+    print('question_data', question_data, 'choice_data', choice_data)
+
+    if question_data != str(current_question_id):
+        await call.answer("Выберите один из актуальных вариантов!")
+        return
+
+    result = {'question': current_question_id, "choice": int(choice_data)}
     answers = data.get('answers')
     answers.append(result)
     await state.update_data(answers=answers)
 
     await state.update_data(current_question_index=current_question_index + 1)
+    await call.answer()
     await ask_question(call.message, state)
 
 
@@ -90,4 +133,5 @@ async def finish_survey(message: types.Message, state: FSMContext):
     await send_answers(response)
     await state.clear()
     await message.answer("Опрос завершен!\n"
-                         "Спасибо за участие!")
+                         "Спасибо за участие!", reply_markup=get_start_survey_kb())
+

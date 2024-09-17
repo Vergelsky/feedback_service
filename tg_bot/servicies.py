@@ -7,7 +7,7 @@ from aiogram import html
 
 
 async def get_survey():
-    url = "http://127.0.0.1:8000/api/get-survey/"
+    url = "http://app:8000/api/get-survey/"
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
@@ -21,7 +21,7 @@ async def get_survey():
 
 
 async def send_answers(answers):
-    url = "http://127.0.0.1:8000/api/load-response/"
+    url = "http://app:8000/api/load-response/"
     try:
         async with aiohttp.ClientSession() as session:
             print(answers)

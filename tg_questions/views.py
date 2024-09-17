@@ -1,10 +1,10 @@
 from rest_framework.generics import CreateAPIView, RetrieveAPIView
-from django.forms import inlineformset_factory
-from django.urls import reverse_lazy
+
 from django.views.generic import CreateView, UpdateView
 
 from tg_questions.form import SurveyForm, QuestionForm, QuestionFormSet, ChoiceFormSet
 from tg_questions.models import Survey, Question, Choice
+from tg_questions.create_serializers import CreateSurveySerializer
 from tg_questions.serializers import SurveySerializer, ResponseSerializer
 
 from django.http import Http404
@@ -25,11 +25,9 @@ class SurveyRetrieveView(RetrieveAPIView):
 
 
 class SurveyCreateAPIView(CreateAPIView):
-    serializer_class = SurveySerializer
+    serializer_class = CreateSurveySerializer
     queryset = Survey.objects.all()
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
 
 
 class SurveyFormView(CreateView):

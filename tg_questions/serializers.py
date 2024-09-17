@@ -5,7 +5,7 @@ from .models import Survey, Response, Question, Choice, UserResponse
 class ChoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Choice
-        fields = ['text']
+        fields = '__all__'
 
 
 class QuestionSerializer(serializers.ModelSerializer):
@@ -13,15 +13,7 @@ class QuestionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Question
-        fields = ['text', 'order', 'choices']
-
-    def create(self, validated_data):
-        choices = validated_data.pop('choices', [])
-        question = Question.objects.create(**validated_data)
-        for choice in choices:
-            choice['question'] = question
-            ChoiceSerializer.create(**choice)
-        return question
+        fields = '__all__'
 
 
 class SurveySerializer(serializers.ModelSerializer):
@@ -29,15 +21,7 @@ class SurveySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Survey
-        fields = ['title', 'description', 'is_active', 'is_permanent', 'expiration_date', 'questions']
-
-    def create(self, validated_date):
-        questions = validated_date.pop('questions', [])
-        survey = Survey.objects.create(**validated_date)
-        for question in questions:
-            question['survey'] = survey
-            QuestionSerializer.create(**question)
-        return survey
+        fields = '__all__'
 
 
 class UserResponseSerializer(serializers.ModelSerializer):

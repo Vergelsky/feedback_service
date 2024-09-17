@@ -28,14 +28,14 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - .:/app
+      - .:/code
     env_file:
       - .env
 
   tg_bot:
     build:
       context: ./tg_bot/
-      dockerfile: ./tg_bot/Dockerfile
+      dockerfile: Dockerfile
     depends_on:
       - app
     env_file:
