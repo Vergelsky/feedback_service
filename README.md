@@ -7,3 +7,5 @@
 далее <code>docker-compose up --build</code><br>
 <code>docker ps</code> - копируем id контейнера feedback_service-app<br>
 <code>docker exec -it <id_контейнера> python manage.py createsuperuser</code>
+
+создание опроса - /form/
