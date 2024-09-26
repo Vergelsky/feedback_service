@@ -1,0 +1,2 @@
+
+*/10 * * * * root python /app/manage.py deactivate_expired_surveys >> /var/log/cron.log 2>&1

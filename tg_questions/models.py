@@ -2,15 +2,18 @@ from django.db import models
 
 from django.contrib.auth.models import User
 
+NULLABLE = {'null': True, 'blank': True}
+
 
 class Survey(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Создатель опроса")
     title = models.CharField(max_length=255, verbose_name="Название")
-    description = models.TextField(blank=True, null=True, verbose_name="Описание")
+    description = models.TextField(verbose_name="Описание", **NULLABLE)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     is_active = models.BooleanField(default=False, verbose_name="Активен")
     is_permanent = models.BooleanField(default=False, verbose_name="Постоянный")
-    expiration_date = models.DateTimeField(blank=True, null=True, verbose_name="Срок действия")
+    is_quiz = models.BooleanField(default=False, verbose_name="Это квест")
+    expiration_date = models.DateTimeField(verbose_name="Срок действия", **NULLABLE)
 
     class Meta:
         verbose_name = "Опрос"
@@ -36,6 +39,7 @@ class Question(models.Model):
 class Choice(models.Model):
     question = models.ForeignKey(Question, related_name='choices', on_delete=models.CASCADE, verbose_name='Вариант ответа')
     text = models.CharField(max_length=255, verbose_name='Текст')
+    is_right_answer = models.BooleanField(verbose_name='Правильный ответ', **NULLABLE)
     order = models.PositiveIntegerField(default=1, verbose_name='Номер')
 
     class Meta:
@@ -49,11 +53,12 @@ class Choice(models.Model):
 class Response(models.Model):
     client = models.CharField(max_length=255, default="Anonymous", verbose_name='Клиент')
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE, verbose_name='Опрос')
+    is_success = models.BooleanField(verbose_name='Успешный', **NULLABLE)
     completed_at = models.DateTimeField(auto_now_add=True, verbose_name='Время окончания')
 
     class Meta:
-        verbose_name = "Пройденный опрос"
-        verbose_name_plural = "Пройденные опросы"
+        verbose_name = "Результат прохождения "
+        verbose_name_plural = "Результаты прохождений"
 
     def __str__(self):
         return f"Response by {self.client} for {self.survey}"

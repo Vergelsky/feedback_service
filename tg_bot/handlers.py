@@ -40,6 +40,7 @@ async def start_survey_handler(message: Message, state: FSMContext):
         await state.update_data(survey_data=survey_data, answers={})
         await state.update_data(current_question_index=0)
         await state.update_data(answers=[])
+        await message.answer(f"{survey_data['title']}\n\n{survey_data['description']}")
         await ask_question(message, state)
     else:
         await message.answer("Извините, опрос временно не доступен, попробуйте позже!",
