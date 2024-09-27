@@ -9,5 +9,6 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         now = timezone.now()
         expired_surveys = Survey.objects.filter(expiration_date__lt=now, is_active=True)
+        count = expired_surveys.count()
         expired_surveys.update(is_active=False)
-        self.stdout.write(self.style.SUCCESS(f'Deactivated {expired_surveys.count()} expired surveys.'))
+        self.stdout.write(self.style.SUCCESS(f'{count} опросов с истёкшим скроком отмечено неактивными.'))
