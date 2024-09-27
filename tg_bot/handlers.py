@@ -4,7 +4,7 @@ from aiogram.filters import CommandStart, StateFilter
 from aiogram import F
 from aiogram import html, types
 from keyboards import get_start_survey_kb, BUTTONS_TEXTS, get_answers_kb
-from servicies import get_survey, get_irrelevant_message_text, send_answers
+from servicies import get_survey, get_irrelevant_message_text, send_answers, get_quiz_result_text
 
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup, default_state
@@ -128,11 +128,16 @@ async def finish_survey(message: types.Message, state: FSMContext):
     data = await state.get_data()
     # Вид ответов: {'survey_id': 1, 'client': 31234141342, 'responses': [{'question_id': 1, 'choise_id': 1}, {'question_id': 2, 'choise_id': 2}]}
     survey_data = data.get('survey_data')
+
     client = message.from_user.id
     answers = data.get('answers')
+    quiz_result_text = ''
+    if survey_data['is_quiz']:
+        quiz_result_text = get_quiz_result_text(survey_data, answers)
+
     response = {'survey': survey_data['id'], 'client': client, 'responses': answers}
     await send_answers(response)
     await state.clear()
     await message.answer("Опрос завершен!\n"
-                         "Спасибо за участие!", reply_markup=get_start_survey_kb())
-
+                         + quiz_result_text
+                         + "Спасибо за участие!", reply_markup=get_start_survey_kb())

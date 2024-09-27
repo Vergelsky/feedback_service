@@ -25,9 +25,8 @@ class SurveyRetrieveView(RetrieveAPIView):
 
 
 class SurveyCreateAPIView(CreateAPIView):
-    serializer_class = CreateSurveySerializer
+    serializer_class = CreateSurveySerializer # В отдельном файле!
     queryset = Survey.objects.all()
-
 
 
 class SurveyFormView(CreateView):
@@ -35,6 +34,9 @@ class SurveyFormView(CreateView):
     template_name = 'tg_questions/form.html'
     form_class = SurveyForm
 
+# попытка сделать через формсеты (не работает)
+#
+#
 # class SurveyCreateView(CreateView):
 #     model = Survey
 #     template_name = 'tg_questions/survey_form.html'

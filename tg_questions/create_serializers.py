@@ -5,7 +5,7 @@ from tg_questions.models import Survey, Question, Choice
 class CreateChoiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Choice
-        fields = ['text']
+        fields = ['text', 'is_right_answer']
 
     def create(self, validated_data):
         return Choice.objects.create(**validated_data)
@@ -32,7 +32,7 @@ class CreateSurveySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Survey
-        fields = ['title', 'description', 'is_active', 'is_permanent', 'expiration_date', 'questions']
+        fields = ['title', 'description', 'is_active', 'is_permanent', 'is_quiz', 'expiration_date', 'questions']
         read_only_fields = ['user']
 
     def validate(self, attrs):

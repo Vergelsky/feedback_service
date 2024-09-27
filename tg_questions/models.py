@@ -12,7 +12,7 @@ class Survey(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     is_active = models.BooleanField(default=False, verbose_name="Активен")
     is_permanent = models.BooleanField(default=False, verbose_name="Постоянный")
-    is_quiz = models.BooleanField(default=False, verbose_name="Это квест")
+    is_quiz = models.BooleanField(default=False, verbose_name="Это квест", **NULLABLE)
     expiration_date = models.DateTimeField(verbose_name="Срок действия", **NULLABLE)
 
     class Meta:
@@ -39,7 +39,7 @@ class Question(models.Model):
 class Choice(models.Model):
     question = models.ForeignKey(Question, related_name='choices', on_delete=models.CASCADE, verbose_name='Вариант ответа')
     text = models.CharField(max_length=255, verbose_name='Текст')
-    is_right_answer = models.BooleanField(verbose_name='Правильный ответ', **NULLABLE)
+    is_right_answer = models.BooleanField(verbose_name='Правильный ответ', default=False)
     order = models.PositiveIntegerField(default=1, verbose_name='Номер')
 
     class Meta:

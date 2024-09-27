@@ -32,8 +32,38 @@ async def send_answers(answers):
         return False
 
 
-def get_irrelevant_message_text(message: Message):
+def get_quiz_result_text(survey_data, answers):
+    # Пример:
+    # survey_data = {'id': 8, 'questions': [{'id': 14, 'choices': [
+    #     {'id': 34, 'text': 'Первый вариант ответа на первый вопрос тестового квиза - правильный2',
+    #      'is_right_answer': True, 'order': 1, 'question': 14, 'callback_choice': 'q_14_34'},
+    #     {'id': 35, 'text': 'Второй вариант ответа на первый вопрос тестового квиза2', 'is_right_answer': False,
+    #      'order': 1, 'question': 14, 'callback_choice': 'q_14_35'}], 'text': 'Текст первого вопроса тестового квиза2',
+    #                          'order': 1, 'survey': 8}, {'id': 15, 'choices': [
+    #     {'id': 36, 'text': 'Первый вариант ответа на второй вопрос тестового квиза - правильный2',
+    #      'is_right_answer': True, 'order': 1, 'que stion ': 15, 'callback_choice ': 'q_15_36 '},
+    #     {'id ': 37, 'text ': 'Второй вариант ответа на второй вопрос тестового квиза2', ' is_right_answer': False,
+    #      ' order': 1, ' question': 15, ' callback_choice': ' q_15_37'}],
+    #                                                     ' text': ' Текст в торого вопроса тестового квиза ',
+    #                                                     'order ': 2, 'survey ': 8}], 'title ': 'Тестовый квиз2',
+    #  ' description': ' Описание тестового квиза2', ' created_at': ' 2024 - 09 - 26 T10: 56: 39.744263 Z ',
+    #  ' is_active ': True, ' is_permanent ': True, ' is_quiz ': True, ' expiration_date ': None, ' user ': 1}
+    # answers = [{' question ': 14, ' choice ': 34}, {' question ': 15, ' choice ': 36}]
+    right_answers = []
+    # выбираем варианты с is_right_answer = True
+    for question in survey_data['questions']:
+        for choice in question['choices']:
+            if choice['is_right_answer']:
+                right_answers.append(choice['id'])
 
+    right_answer_count = 0
+    # сверяем сколько из них совпало с ответами пользователя
+    for answer in answers:
+        if answer['choice'] in right_answers:
+            right_answer_count += 1
+    return f"Ваш результат: {right_answer_count} правильных ответа из {len(right_answers)}!\n"
+
+def get_irrelevant_message_text(message: Message):
     IRRELEVANT_MESSAGE_TEXTS = [
         f"Мне жаль, {html.bold(message.from_user.full_name)},но я могу только предложить пройти опрос."
         f"Хотел бы помочь, но моя судьба — это опросы.",

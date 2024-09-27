@@ -9,25 +9,34 @@ class SurveyAdmin(admin.ModelAdmin):
     list_display_links = ('title',)
 
 
-
-
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
-    list_display = ('survey', 'text', 'order')
-    list_display_links = ('survey',)
+    list_display = ('text', 'survey', 'order')
+    list_display_links = ('text',)
+
 
 @admin.register(Choice)
 class ChoiceAdmin(admin.ModelAdmin):
-    list_display = ('question', 'text')
-    list_display_links = ('question',)
+    list_display = ('text', 'question__survey', 'question', 'is_right_answer')
+    list_display_links = ('text',)
+
 
 @admin.register(Response)
 class ResponseAdmin(admin.ModelAdmin):
-    list_display = ('survey', 'client', 'completed_at')
+    list_display = ('client', 'survey', 'completed_at', 'is_success')
     list_display_links = ('client',)
 
 
 @admin.register(UserResponse)
 class UserResponseAdmin(admin.ModelAdmin):
-    list_display = ('response', 'question', 'choice')
+    def get_choice_is_right_answer(self, obj):
+        return obj.choice.is_right_answer
+
+    get_choice_is_right_answer.short_description = 'Правильный ответ'
+    get_choice_is_right_answer.boolean = True
+
+    list_display = ('response', 'question', 'choice', 'get_choice_is_right_answer')
     list_display_links = ('response',)
+
+
+
